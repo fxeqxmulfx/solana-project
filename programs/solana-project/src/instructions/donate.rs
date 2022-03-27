@@ -4,17 +4,19 @@ use anchor_lang::solana_program::system_instruction;
 use crate::state::Store;
 
 
-pub fn donate(ctx: Context<Donate>, lamports: u64) -> Result<()> {
+pub fn make_donations(ctx: Context<Donate>, lamports: u64) -> Result<()> {
     let from = &ctx.accounts.from;
     let to = &ctx.accounts.to;
     let result = invoke(&system_instruction::transfer(
         from.key, to.key,
         lamports), &[from.to_account_info(), to.to_account_info()],
     );
-    let store = &mut ctx.accounts.store;
-    store.put_donate(from.key(), lamports);
     match result {
-        Ok(_) => Ok(()),
+        Ok(_) => {
+            let store = &mut ctx.accounts.store;
+            store.put_donate(from.key(), lamports);
+            Ok(())
+        }
         Err(err) => Err(Error::from(err))
     }
 }
@@ -30,6 +32,9 @@ pub struct Donate<'info> {
 
     pub system_program: Program<'info, System>,
 
-    #[account(mut)]
+    #[account(
+    mut,
+    seeds = [b"store"],
+    bump = store.bump)]
     pub store: Account<'info, Store>,
 }

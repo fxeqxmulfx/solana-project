@@ -6,6 +6,7 @@ pub struct Store {
     pub owner: Pubkey,
     pub users: Vec<Pubkey>,
     pub donation: Vec<u64>,
+    pub bump: u8,
 }
 
 impl Store {

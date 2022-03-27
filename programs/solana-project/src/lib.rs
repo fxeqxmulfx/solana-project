@@ -6,7 +6,6 @@ use anchor_lang::prelude::*;
 pub mod instructions;
 pub mod state;
 
-
 declare_id!("D1wdCFggRdEXEYHTgVYBxVF8DQDJe3xRbe9QhQiYEnx2");
 
 #[program]
@@ -18,6 +17,10 @@ pub mod solana_project {
     }
 
     pub fn make_donations(ctx: Context<Donate>, lamports: u64) -> Result<()> {
-        instructions::donate(ctx, lamports)
+        instructions::make_donations(ctx, lamports)
+    }
+
+    pub fn withdraw_donations(ctx: Context<Withdraw>) -> Result<()> {
+        instructions::withdraw_donations(ctx)
     }
 }
