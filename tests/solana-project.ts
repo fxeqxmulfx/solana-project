@@ -2,7 +2,7 @@ import * as anchor from "@project-serum/anchor"
 import {Program} from "@project-serum/anchor"
 import {SolanaProject} from "../target/types/solana_project"
 import {SystemProgram, Transaction} from '@solana/web3.js';
-import {expect, use} from "chai";
+import {expect} from "chai";
 
 describe("solana-project", () => {
     anchor.setProvider(anchor.Provider.env())
@@ -12,8 +12,8 @@ describe("solana-project", () => {
 
     const payer = anchor.web3.Keypair.generate()
 
-    const owner = provider.wallet
     const store = anchor.web3.Keypair.generate()
+    const bot = anchor.web3.Keypair.generate()
     const user = anchor.web3.Keypair.generate()
 
     it("Initialize program state", async () => {
@@ -27,17 +27,17 @@ describe("solana-project", () => {
                 tx.add(
                     SystemProgram.transfer({
                         fromPubkey: payer.publicKey,
-                        toPubkey: owner.publicKey,
-                        lamports: 10_000_000_000,
-                    }),
-                    SystemProgram.transfer({
-                        fromPubkey: payer.publicKey,
                         toPubkey: store.publicKey,
                         lamports: 10_000_000_000,
                     }),
                     SystemProgram.transfer({
                         fromPubkey: payer.publicKey,
                         toPubkey: user.publicKey,
+                        lamports: 10_000_000_000,
+                    }),
+                    SystemProgram.transfer({
+                        fromPubkey: payer.publicKey,
+                        toPubkey: bot.publicKey,
                         lamports: 10_000_000_000,
                     }),
                 )
@@ -51,26 +51,25 @@ describe("solana-project", () => {
         await program.rpc.initialize({
             accounts: {
                 store: store.publicKey,
-                owner: owner.publicKey,
+                owner: bot.publicKey,
                 systemProgram: systemProgram,
             },
-            signers: [store],
+            signers: [store, bot],
         })
         const tempStore = await program.account.store.fetch(store.publicKey)
-        expect(tempStore.owner).to.eql(owner.publicKey)
+        expect(tempStore.owner).to.eql(bot.publicKey)
     })
 
     it("Test donate", async () => {
-        console.log(store.publicKey.toBase58())
-        console.log(user.publicKey.toBase58())
-        console.log(systemProgram.toBase58())
+        const store_ = await program.account.store.fetch(store.publicKey)
         await program.rpc.makeDonations(new anchor.BN("100000"), {
             accounts: {
-                store: store.publicKey,
                 from: user.publicKey,
+                to: store_.owner,
                 systemProgram: systemProgram,
+                store: store.publicKey,
             },
-            signers: [store],
+            signers: [user],
         })
     })
 })
