@@ -1,5 +1,5 @@
 test:
-	anchor test
+	yarn install; anchor test
 
 devnet-deploy:
 	cargo build-bpf
