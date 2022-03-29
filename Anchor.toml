@@ -1,5 +1,6 @@
 [features]
 seeds = false
+
 [programs.localnet]
 solana_project = "D1wdCFggRdEXEYHTgVYBxVF8DQDJe3xRbe9QhQiYEnx2"
 

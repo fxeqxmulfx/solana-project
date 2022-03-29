@@ -12,9 +12,9 @@ pub fn initialize(ctx: Context<Initialize>) -> Result<()> {
 #[derive(Accounts)]
 pub struct Initialize<'info> {
     #[account(init,
-    seeds = [b"store"],
+    seeds = [b"store_"],
     bump,
-    space = 1024,
+    space = 10240,
     payer = owner)]
     pub store: Account<'info, Store>,
     #[account(mut)]

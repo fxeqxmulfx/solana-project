@@ -13,7 +13,7 @@ describe("solana-project", async () => {
     const payer = anchor.web3.Keypair.generate()
 
     const [store] = await anchor.web3.PublicKey
-        .findProgramAddress([anchor.utils.bytes.utf8.encode("store")],
+        .findProgramAddress([anchor.utils.bytes.utf8.encode("store_")],
             program.programId)
     const bot = anchor.web3.Keypair.generate()
     const user = anchor.web3.Keypair.generate()

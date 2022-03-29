@@ -34,7 +34,7 @@ pub struct Donate<'info> {
 
     #[account(
     mut,
-    seeds = [b"store"],
+    seeds = [b"store_"],
     bump = store.bump)]
     pub store: Account<'info, Store>,
 }
