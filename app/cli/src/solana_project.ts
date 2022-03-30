@@ -1,5 +1,5 @@
 export type SolanaProject = {
-  "version": "1.0.2",
+  "version": "2.0.0",
   "name": "solana_project",
   "instructions": [
     {
@@ -29,10 +29,41 @@ export type SolanaProject = {
       "args": []
     },
     {
+      "name": "initializeUser",
+      "accounts": [
+        {
+          "name": "user",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "userStore",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "bank",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "store",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "makeDonations",
       "accounts": [
         {
-          "name": "from",
+          "name": "fromUser",
           "isMut": true,
           "isSigner": true
         },
@@ -48,6 +79,11 @@ export type SolanaProject = {
         },
         {
           "name": "store",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userStore",
           "isMut": true,
           "isSigner": false
         }
@@ -98,11 +134,11 @@ export type SolanaProject = {
         "kind": "struct",
         "fields": [
           {
-            "name": "bank",
+            "name": "owner",
             "type": "publicKey"
           },
           {
-            "name": "owner",
+            "name": "bank",
             "type": "publicKey"
           },
           {
@@ -112,10 +148,30 @@ export type SolanaProject = {
             }
           },
           {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "userStore",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "user",
+            "type": "publicKey"
+          },
+          {
             "name": "donation",
             "type": {
               "vec": "u64"
             }
+          },
+          {
+            "name": "bank",
+            "type": "publicKey"
           },
           {
             "name": "bump",
@@ -128,7 +184,7 @@ export type SolanaProject = {
 };
 
 export const IDL: SolanaProject = {
-  "version": "1.0.2",
+  "version": "2.0.0",
   "name": "solana_project",
   "instructions": [
     {
@@ -158,10 +214,41 @@ export const IDL: SolanaProject = {
       "args": []
     },
     {
+      "name": "initializeUser",
+      "accounts": [
+        {
+          "name": "user",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "userStore",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "bank",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "store",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "makeDonations",
       "accounts": [
         {
-          "name": "from",
+          "name": "fromUser",
           "isMut": true,
           "isSigner": true
         },
@@ -177,6 +264,11 @@ export const IDL: SolanaProject = {
         },
         {
           "name": "store",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userStore",
           "isMut": true,
           "isSigner": false
         }
@@ -227,11 +319,11 @@ export const IDL: SolanaProject = {
         "kind": "struct",
         "fields": [
           {
-            "name": "bank",
+            "name": "owner",
             "type": "publicKey"
           },
           {
-            "name": "owner",
+            "name": "bank",
             "type": "publicKey"
           },
           {
@@ -241,10 +333,30 @@ export const IDL: SolanaProject = {
             }
           },
           {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "userStore",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "user",
+            "type": "publicKey"
+          },
+          {
             "name": "donation",
             "type": {
               "vec": "u64"
             }
+          },
+          {
+            "name": "bank",
+            "type": "publicKey"
           },
           {
             "name": "bump",

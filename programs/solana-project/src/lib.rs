@@ -16,6 +16,10 @@ pub mod solana_project {
         instructions::initialize(ctx)
     }
 
+    pub fn initialize_user(ctx: Context<InitializeUser>) -> Result<()> {
+        instructions::initialize_user(ctx)
+    }
+
     pub fn make_donations(ctx: Context<Donate>, lamports: u64) -> Result<()> {
         instructions::make_donations(ctx, lamports)
     }

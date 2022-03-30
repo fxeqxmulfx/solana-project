@@ -6,7 +6,7 @@ pub fn initialize(ctx: Context<Initialize>) -> Result<()> {
     let store = &mut ctx.accounts.store;
     store.owner = *ctx.accounts.owner.key;
     store.bank = *ctx.accounts.bank.key;
-    store.bump = *ctx.bumps.get(SEED_STORE).unwrap();
+    store.bump = *ctx.bumps.get("store").unwrap();
     Ok(())
 }
 
@@ -15,7 +15,7 @@ pub struct Initialize<'info> {
     #[account(mut)]
     pub owner: Signer<'info>,
 
-    /// CHECK: none
+    /// CHECK: read_only
     pub bank: AccountInfo<'info>,
 
     #[account(init,
