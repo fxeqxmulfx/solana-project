@@ -1,23 +1,29 @@
 use anchor_lang::prelude::*;
 use crate::state::Store;
+use crate::SEED_STORE;
 
 pub fn initialize(ctx: Context<Initialize>) -> Result<()> {
     let store = &mut ctx.accounts.store;
     store.owner = *ctx.accounts.owner.key;
-    msg!("{:?}", ctx.bumps.get("store"));
-    store.bump = *ctx.bumps.get("store").unwrap();
+    store.bank = *ctx.accounts.bank.key;
+    store.bump = *ctx.bumps.get(SEED_STORE).unwrap();
     Ok(())
 }
 
 #[derive(Accounts)]
 pub struct Initialize<'info> {
+    #[account(mut)]
+    pub owner: Signer<'info>,
+
+    /// CHECK: none
+    pub bank: AccountInfo<'info>,
+
     #[account(init,
-    seeds = [b"store_"],
+    seeds = [SEED_STORE.as_ref(), owner.key().as_ref()],
     bump,
     space = 10240,
     payer = owner)]
     pub store: Account<'info, Store>,
-    #[account(mut)]
-    pub owner: Signer<'info>,
+
     pub system_program: Program<'info, System>,
 }

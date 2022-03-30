@@ -1,0 +1,1 @@
+pub const SEED_STORE: &'static str = "store";

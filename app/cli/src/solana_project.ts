@@ -1,19 +1,24 @@
 export type SolanaProject = {
-  "version": "1.0.0",
+  "version": "1.0.2",
   "name": "solana_project",
   "instructions": [
     {
       "name": "initialize",
       "accounts": [
         {
-          "name": "store",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
           "name": "owner",
           "isMut": true,
           "isSigner": true
+        },
+        {
+          "name": "bank",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "store",
+          "isMut": true,
+          "isSigner": false
         },
         {
           "name": "systemProgram",
@@ -32,7 +37,7 @@ export type SolanaProject = {
           "isSigner": true
         },
         {
-          "name": "to",
+          "name": "bank",
           "isMut": true,
           "isSigner": false
         },
@@ -58,12 +63,12 @@ export type SolanaProject = {
       "name": "withdrawDonations",
       "accounts": [
         {
-          "name": "owner",
+          "name": "bank",
           "isMut": true,
           "isSigner": true
         },
         {
-          "name": "to",
+          "name": "owner",
           "isMut": true,
           "isSigner": false
         },
@@ -71,9 +76,19 @@ export type SolanaProject = {
           "name": "systemProgram",
           "isMut": false,
           "isSigner": false
+        },
+        {
+          "name": "store",
+          "isMut": true,
+          "isSigner": false
         }
       ],
-      "args": []
+      "args": [
+        {
+          "name": "lamports",
+          "type": "u64"
+        }
+      ]
     }
   ],
   "accounts": [
@@ -82,6 +97,10 @@ export type SolanaProject = {
       "type": {
         "kind": "struct",
         "fields": [
+          {
+            "name": "bank",
+            "type": "publicKey"
+          },
           {
             "name": "owner",
             "type": "publicKey"
@@ -109,21 +128,26 @@ export type SolanaProject = {
 };
 
 export const IDL: SolanaProject = {
-  "version": "1.0.0",
+  "version": "1.0.2",
   "name": "solana_project",
   "instructions": [
     {
       "name": "initialize",
       "accounts": [
         {
-          "name": "store",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
           "name": "owner",
           "isMut": true,
           "isSigner": true
+        },
+        {
+          "name": "bank",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "store",
+          "isMut": true,
+          "isSigner": false
         },
         {
           "name": "systemProgram",
@@ -142,7 +166,7 @@ export const IDL: SolanaProject = {
           "isSigner": true
         },
         {
-          "name": "to",
+          "name": "bank",
           "isMut": true,
           "isSigner": false
         },
@@ -168,12 +192,12 @@ export const IDL: SolanaProject = {
       "name": "withdrawDonations",
       "accounts": [
         {
-          "name": "owner",
+          "name": "bank",
           "isMut": true,
           "isSigner": true
         },
         {
-          "name": "to",
+          "name": "owner",
           "isMut": true,
           "isSigner": false
         },
@@ -181,9 +205,19 @@ export const IDL: SolanaProject = {
           "name": "systemProgram",
           "isMut": false,
           "isSigner": false
+        },
+        {
+          "name": "store",
+          "isMut": true,
+          "isSigner": false
         }
       ],
-      "args": []
+      "args": [
+        {
+          "name": "lamports",
+          "type": "u64"
+        }
+      ]
     }
   ],
   "accounts": [
@@ -192,6 +226,10 @@ export const IDL: SolanaProject = {
       "type": {
         "kind": "struct",
         "fields": [
+          {
+            "name": "bank",
+            "type": "publicKey"
+          },
           {
             "name": "owner",
             "type": "publicKey"

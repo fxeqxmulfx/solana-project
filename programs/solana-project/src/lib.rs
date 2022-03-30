@@ -20,7 +20,7 @@ pub mod solana_project {
         instructions::make_donations(ctx, lamports)
     }
 
-    pub fn withdraw_donations(ctx: Context<Withdraw>) -> Result<()> {
-        instructions::withdraw_donations(ctx)
+    pub fn withdraw_donations(ctx: Context<Withdraw>, lamports: u64) -> Result<()> {
+        instructions::withdraw_donations(ctx, lamports)
     }
 }

@@ -1,14 +1,15 @@
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::program::invoke;
 use anchor_lang::solana_program::system_instruction;
+use crate::state::Store;
+use crate::SEED_STORE;
 
-pub fn withdraw_donations(ctx: Context<Withdraw>) -> Result<()> {
+pub fn withdraw_donations(ctx: Context<Withdraw>, lamports: u64) -> Result<()> {
+    let bank = &ctx.accounts.bank;
     let owner = &ctx.accounts.owner;
-    let to = &ctx.accounts.to;
-    let lamports = **owner.to_account_info().lamports.borrow();
     let result = invoke(&system_instruction::transfer(
-        owner.key, to.key,
-        lamports), &[owner.to_account_info(), to.to_account_info()],
+        bank.key, owner.key,
+        lamports), &[bank.to_account_info(), owner.to_account_info()],
     );
     match result {
         Ok(_) => Ok(()),
@@ -18,12 +19,18 @@ pub fn withdraw_donations(ctx: Context<Withdraw>) -> Result<()> {
 
 #[derive(Accounts)]
 pub struct Withdraw<'info> {
-    #[account(mut)]
-    pub owner: Signer<'info>,
+    #[account(mut, address = store.bank.key())]
+    pub bank: Signer<'info>,
 
-    #[account(mut)]
+    #[account(mut, address = store.owner.key())]
     /// CHECK: mut
-    pub to: AccountInfo<'info>,
+    pub owner: AccountInfo<'info>,
 
     pub system_program: Program<'info, System>,
+
+    #[account(
+    mut,
+    seeds = [SEED_STORE.as_ref(), store.owner.key().as_ref()],
+    bump = store.bump)]
+    pub store: Account<'info, Store>,
 }

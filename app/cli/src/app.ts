@@ -1,13 +1,20 @@
 import {
-    Keypair, SystemProgram,
-    Transaction, PublicKey,
-    clusterApiUrl, LAMPORTS_PER_SOL, Connection
+    clusterApiUrl,
+    Connection,
+    Keypair,
+    LAMPORTS_PER_SOL,
+    PublicKey,
+    SystemProgram,
+    Transaction
 } from "@solana/web3.js"
 import {readFileSync} from "fs"
+import * as anchor from "@project-serum/anchor"
 import {BN, Program, Provider} from "@project-serum/anchor"
-import * as anchor from '@project-serum/anchor'
 import {IDL, SolanaProject} from "./solana_project"
 import _ from "lodash"
+
+const PROGRAM_ID = "D1wdCFggRdEXEYHTgVYBxVF8DQDJe3xRbe9QhQiYEnx2"
+const SEED_STORE = "store"
 
 function readKeypairFromPath(path: string): Keypair {
     const data = JSON.parse(readFileSync(path, "utf-8"))
@@ -21,14 +28,16 @@ function initProvider(): Provider {
     return anchor.getProvider()
 }
 
-async function initStore(program: Program<SolanaProject>, storePublicKey: PublicKey, botKeypair: Keypair) {
+async function initStore(bank: PublicKey, owner: Keypair,
+                         storePubKey: PublicKey, program: Program<SolanaProject>) {
     await program.rpc.initialize({
         accounts: {
-            store: storePublicKey,
-            owner: botKeypair.publicKey,
+            bank: bank,
+            owner: owner.publicKey,
+            store: storePubKey,
             systemProgram: SystemProgram.programId,
         },
-        signers: [botKeypair],
+        signers: [owner],
     })
 }
 
@@ -38,25 +47,6 @@ async function initPayer(connection: Connection): Promise<Keypair> {
         await connection.requestAirdrop(payerKeyPair.publicKey, LAMPORTS_PER_SOL * 2)
     )
     return payerKeyPair
-}
-
-async function initBot(provider: Provider, payerKeyPair: Keypair): Promise<Keypair> {
-    const botKeypair = readKeypairFromPath("../../localnet/bot.json")
-    await provider.send(
-        (() => {
-            const tx = new Transaction()
-            tx.add(
-                SystemProgram.transfer({
-                    fromPubkey: payerKeyPair.publicKey,
-                    toPubkey: botKeypair.publicKey,
-                    lamports: LAMPORTS_PER_SOL,
-                }),
-            )
-            return tx
-        })(),
-        [payerKeyPair],
-    )
-    return botKeypair
 }
 
 async function generateUser(provider: Provider, payerKeyPair: Keypair): Promise<Keypair> {
@@ -78,16 +68,15 @@ async function generateUser(provider: Provider, payerKeyPair: Keypair): Promise<
     return userKeyPair
 }
 
-async function makeDonations(sum: BN, program: Program<SolanaProject>,
-                             userKeyPair: Keypair, to: PublicKey, store: PublicKey) {
+async function makeDonations(sum: BN, from: Keypair, bank: PublicKey, store: PublicKey, program: Program<SolanaProject>) {
     await program.rpc.makeDonations(sum, {
         accounts: {
-            from: userKeyPair.publicKey,
-            to: to,
+            from: from.publicKey,
+            bank: bank,
             systemProgram: SystemProgram.programId,
             store: store,
         },
-        signers: [userKeyPair],
+        signers: [from],
     })
 }
 
@@ -103,48 +92,50 @@ function collectUsersAndDonation(users: PublicKey[], donation: BN[]): Map<string
     return map
 }
 
-async function withdrawDonations(program: Program<SolanaProject>, owner: Keypair, to: PublicKey) {
-    await program.rpc.withdrawDonations({
+async function withdrawDonations(lamports: BN, owner: PublicKey, bank: Keypair, store: PublicKey, program: Program<SolanaProject>) {
+    await program.rpc.withdrawDonations(lamports, {
         accounts: {
-            owner: owner.publicKey,
-            to: to,
+            bank: bank.publicKey,
+            owner: owner,
             systemProgram: SystemProgram.programId,
+            store: store,
         },
-        signers: [owner],
+        signers: [bank],
     })
 }
 
 async function main() {
     const provider = initProvider()
     const connection = provider.connection
-    const programId = "D1wdCFggRdEXEYHTgVYBxVF8DQDJe3xRbe9QhQiYEnx2"
-    const program = new Program(IDL, programId, provider)
+    const program = new Program(IDL, PROGRAM_ID, provider)
 
-    const payerKeyPair = await initPayer(connection)
-    const botKeypair = await initBot(provider, payerKeyPair)
+    const payer = await initPayer(connection)
 
-    const [storePublicKey] = await PublicKey.findProgramAddress([Buffer.from("store_")], program.programId)
+    const owner = readKeypairFromPath("../../localnet/bob.json")
+
+    const [storePubKey] = await PublicKey.findProgramAddress([Buffer.from(SEED_STORE), owner.publicKey.toBuffer()],
+        program.programId)
 
     // store has already been created
-    // await initStore(program, storePublicKey, botKeypair)
+    // await initStore(bank.publicKey, owner, storePubKey, program)
 
-    const user0KeyPair = await generateUser(provider, payerKeyPair)
-    const user1KeyPair = await generateUser(provider, payerKeyPair)
+    const user0 = await generateUser(provider, payer)
+    const user1 = await generateUser(provider, payer)
 
-    let store = await program.account.store.fetch(storePublicKey)
-    await makeDonations(new BN("100001"), program, user0KeyPair, store.owner, storePublicKey)
-    await makeDonations(new BN("100002"), program, user1KeyPair, store.owner, storePublicKey)
-    await makeDonations(new BN("100003"), program, user1KeyPair, store.owner, storePublicKey)
-    store = await program.account.store.fetch(storePublicKey)
+    let store = await program.account.store.fetch(storePubKey)
+    await makeDonations(new BN("100001"), user0, store.bank, storePubKey, program)
+    await makeDonations(new BN("100002"), user1, store.bank, storePubKey, program)
+    await makeDonations(new BN("100003"), user1, store.bank, storePubKey, program)
+    store = await program.account.store.fetch(storePubKey)
     const donation = collectUsersAndDonation(store.users, store.donation)
-    for (let elem of donation) {
+    for (const elem of donation) {
         console.log(elem)
     }
 
-    const user3KeyPair = Keypair.generate()
-    await withdrawDonations(program, botKeypair, user3KeyPair.publicKey)
-    const user3 = await connection.getAccountInfo(user3KeyPair.publicKey)
-    console.log(user3)
+    const bank = readKeypairFromPath("../../localnet/bank.json")
+    console.log("before", await connection.getAccountInfo(owner.publicKey))
+    await withdrawDonations(new BN("100000"), owner.publicKey, bank, storePubKey, program)
+    console.log("after", await connection.getAccountInfo(owner.publicKey))
 }
 
 main()

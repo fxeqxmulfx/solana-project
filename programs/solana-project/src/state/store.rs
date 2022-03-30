@@ -3,6 +3,7 @@ use anchor_lang::prelude::*;
 #[account]
 #[derive(Default)]
 pub struct Store {
+    pub bank: Pubkey,
     pub owner: Pubkey,
     pub users: Vec<Pubkey>,
     pub donation: Vec<u64>,
